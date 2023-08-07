@@ -74,10 +74,9 @@ def get_api_answer(timestamp):
         return homework_statuses.json()
     except requests.RequestException:
         raise exceptions.ConnectApiError(
-            f'Неверный код ответа: url = {ENDPOINT},'
-            f'headers = {HEADERS},'
-            f'params = {params_request}',
-        )
+            'Неверный код ответа: url = {url},'
+            'headers = {headers},'
+            'params = {params}'.format(**params_request))
 
 
 def check_response(response):
@@ -130,8 +129,8 @@ def main():
             )
             homeworks = check_response(request_new)
             if not homeworks:
-                homework = parse_status(homeworks[0])
-                logging.info('homework')
+                homework = 'Нет активной работы.'
+                logging.info(homework)
             else:
                 homework = parse_status(homeworks[0])
             if homework != initial_answer:
