@@ -77,24 +77,25 @@ def get_api_answer(timestamp):
             f'Неверный код ответа: url = {ENDPOINT},'
             f'headers = {HEADERS},'
             f'params = {params_request}',
-        )
+        ).format(**params_request)
 
 
 def check_response(response):
     """проверяет ответ API на соответствие документации."""
-    error_type_api = 'Ошибка в типе ответа API.'
     empty_answer_api = 'Пустой ответ от API.'
     no_list = 'Homeworks не является списком.'
     no_int = 'Current_date не является счислом.'
+
     if not isinstance(response, dict):
-        raise TypeError(error_type_api)
+        raise TypeError('Ошибка в типе ответа API: {response}')
     if 'homeworks' not in response or 'current_date' not in response:
         raise KeyError(empty_answer_api)
-    if not isinstance(response.get('homeworks'), list):
+    homeworks = response['homeworks']
+    if not isinstance(homeworks, list):
         raise TypeError(no_list)
     if not isinstance(response['current_date'], int):
         raise TypeError(no_int)
-    return response.get('homeworks')
+    return homeworks
 
 
 def parse_status(homework):
@@ -105,7 +106,6 @@ def parse_status(homework):
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_VERDICTS:
         massage_error = 'Недокументированный статус домашней работы.'
-        logging.error(massage_error)
         raise ValueError(massage_error)
     verdict = HOMEWORK_VERDICTS[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
@@ -116,7 +116,7 @@ def main():
     logging.info('Начало работы Бота')
     check_tokens()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    timestamp = int(time.time())
+    timestamp = 0
     send_message(bot, 'Начало работы Бота')
     initial_answer = ''
 
@@ -126,19 +126,17 @@ def main():
             timestamp = request_new.get(
                 'current_data', timestamp
             )
-            if not request_new:
-                logging.info('Пустой ответ от API.')
-                continue
             homeworks = check_response(request_new)
             if not homeworks:
                 logging.info('Нет активной работы.')
-            homework = parse_status(homeworks[0])
-            if homework != initial_answer:
-                send_message(bot, homework)
-                logging.info(f'Отправлен новый статус: {homework}')
-                initial_answer = request_new
             else:
-                logging.info('Статус не обновлен.')
+                homework = parse_status(homeworks[0])
+                if homework != initial_answer:
+                    send_message(bot, homework)
+                    logging.info(f'Отправлен новый статус: {homework}')
+                    initial_answer = request_new
+                else:
+                    logging.info('Статус не обновлен.')
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
