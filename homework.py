@@ -77,7 +77,7 @@ def get_api_answer(timestamp):
             f'Неверный код ответа: url = {ENDPOINT},'
             f'headers = {HEADERS},'
             f'params = {params_request}',
-        ).format(**params_request)
+        )
 
 
 def check_response(response):
@@ -92,7 +92,7 @@ def check_response(response):
         )
     if 'homeworks' not in response or 'current_date' not in response:
         raise KeyError(empty_answer_api)
-    homeworks = response['homeworks']
+    homeworks = response.get('homeworks')
     if not isinstance(homeworks, list):
         raise TypeError(no_list)
     if not isinstance(response['current_date'], int):
@@ -130,10 +130,10 @@ def main():
             )
             homeworks = check_response(request_new)
             if not homeworks:
-                logging.info('Нет активной работы.')
                 homework = parse_status(homeworks[0])
+                logging.info('homework')
             else:
-                homework = 'Новые статусы отсутсвуют.'
+                homework = parse_status(homeworks[0])
             if homework != initial_answer:
                 send_message(bot, homework)
                 logging.info(f'Отправлен новый статус: {homework}')
@@ -143,8 +143,10 @@ def main():
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            logging.error(message)
-            send_message(bot, message)
+            if message != initial_answer:
+                initial_answer = message
+                logging.error(message)
+                send_message(bot, message)
         finally:
             time.sleep(RETRY_PERIOD)
 
