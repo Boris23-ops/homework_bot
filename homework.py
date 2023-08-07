@@ -87,7 +87,7 @@ def check_response(response):
     no_int = 'Current_date не является счислом.'
 
     if not isinstance(response, dict):
-        raise TypeError('Ошибка в типе ответа API: {response}')
+        raise TypeError('Ошибка в типе ответа API: {}'.format(type(response)))
     if 'homeworks' not in response or 'current_date' not in response:
         raise KeyError(empty_answer_api)
     homeworks = response['homeworks']
