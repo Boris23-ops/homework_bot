@@ -131,14 +131,15 @@ def main():
             homeworks = check_response(request_new)
             if not homeworks:
                 logging.info('Нет активной работы.')
-            else:
                 homework = parse_status(homeworks[0])
-                if homework != initial_answer:
-                    send_message(bot, homework)
-                    logging.info(f'Отправлен новый статус: {homework}')
-                    initial_answer = request_new
-                else:
-                    logging.info('Статус не обновлен.')
+            else:
+                homework = 'Новые статусы отсутсвуют.'
+            if homework != initial_answer:
+                send_message(bot, homework)
+                logging.info(f'Отправлен новый статус: {homework}')
+                initial_answer = request_new
+            else:
+                logging.info('Статус не обновлен.')
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
